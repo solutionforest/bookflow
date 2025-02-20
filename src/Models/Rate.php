@@ -106,6 +106,7 @@ class Rate extends Model
 
         if ($this->starts_at && $this->ends_at) {
             $time = $dateTime->format('H:i:s');
+
             return $time >= $this->starts_at->format('H:i:s') && $time <= $this->ends_at->format('H:i:s');
         }
 
@@ -131,8 +132,9 @@ class Rate extends Model
     /**
      * Calculate the total price based on the number of units.
      *
-     * @param int $units The number of units to calculate the price for
+     * @param  int  $units  The number of units to calculate the price for
      * @return float The total price
+     *
      * @throws \InvalidArgumentException If units is not a positive integer
      */
     public function calculateTotalPrice(int $units): float

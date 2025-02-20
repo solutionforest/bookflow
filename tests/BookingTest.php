@@ -6,11 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon as DateTime;
 use SolutionForest\Bookflow\Models\Booking;
 use SolutionForest\Bookflow\Models\Rate;
-use SolutionForest\Bookflow\Tests\TestResource;
 
 class BookingTest extends TestCase
 {
-    /** @var TestResource */
     protected TestResource $resource;
 
     /** @var Model */
@@ -19,15 +17,18 @@ class BookingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        $this->resource = new TestResource();
+
+        $this->resource = new TestResource;
         $this->resource->save();
 
         $this->customer = new class extends Model
         {
             protected $table = 'customers';
+
             protected $guarded = [];
+
             protected $fillable = ['*'];
+
             public $id;
 
             public function save(array $options = [])

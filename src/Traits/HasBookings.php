@@ -2,10 +2,10 @@
 
 namespace SolutionForest\Bookflow\Traits;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use SolutionForest\Bookflow\Models\Booking;
 use SolutionForest\Bookflow\Models\Rate;
-use Illuminate\Database\Eloquent\Model;
 
 trait HasBookings
 {

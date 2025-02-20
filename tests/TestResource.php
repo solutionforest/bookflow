@@ -13,6 +13,7 @@ class TestResource extends Model
     use HasBookings;
 
     protected $table = 'resources';
+
     protected $guarded = [];
 
     public function save(array $options = [])

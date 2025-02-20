@@ -5,11 +5,11 @@ namespace SolutionForest\Bookflow\Tests;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
 use SolutionForest\Bookflow\BookflowServiceProvider;
-use SolutionForest\Bookflow\Tests\TestResource;
 
 class TestCase extends Orchestra
 {
     protected TestResource $resource;
+
     protected $customer;
 
     protected function setUp(): void
