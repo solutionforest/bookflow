@@ -15,6 +15,13 @@ class TestCase extends Orchestra
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'SolutionForest\\Bookflow\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
+
+        // Refresh migrations to ensure clean database state
+        $this->artisan('migrate:fresh');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
+        // Create test tables for resources and customers
+        $this->createTestTables();
     }
 
     protected function getPackageProviders($app)
@@ -27,11 +34,24 @@ class TestCase extends Orchestra
     public function getEnvironmentSetUp($app)
     {
         config()->set('database.default', 'testing');
+        config()->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
+    }
 
-        /*
-         foreach (\Illuminate\Support\Facades\File::allFiles(__DIR__ . '/database/migrations') as $migration) {
-            (include $migration->getRealPath())->up();
-         }
-         */
+    protected function createTestTables(): void
+    {
+        // Create tables for test models (resources and customers)
+        $this->app['db']->connection()->getSchemaBuilder()->create('resources', function ($table) {
+            $table->id();
+            $table->timestamps();
+        });
+
+        $this->app['db']->connection()->getSchemaBuilder()->create('customers', function ($table) {
+            $table->id();
+            $table->timestamps();
+        });
     }
 }

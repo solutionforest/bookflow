@@ -1,19 +1,18 @@
-# This is my package bookflow
+# BookFlow
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/lam0819/bookflow.svg?style=flat-square)](https://packagist.org/packages/lam0819/bookflow)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/lam0819/bookflow/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/lam0819/bookflow/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/lam0819/bookflow/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/lam0819/bookflow/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/lam0819/bookflow.svg?style=flat-square)](https://packagist.org/packages/lam0819/bookflow)
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+BookFlow is a flexible Laravel package for managing bookings and pricing strategies. It provides a robust foundation for implementing booking systems with customizable pricing calculations.
 
-## Support us
+## Features
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/bookflow.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/bookflow)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+- Easy booking management
+- Flexible pricing strategies (Fixed, Hourly, Daily)
+- Customizable time-based pricing
+- Extensible architecture for custom pricing strategies
 
 ## Installation
 
@@ -23,37 +22,118 @@ You can install the package via composer:
 composer require lam0819/bookflow
 ```
 
-You can publish and run the migrations with:
+Publish and run the migrations:
 
 ```bash
 php artisan vendor:publish --tag="bookflow-migrations"
 php artisan migrate
 ```
 
-You can publish the config file with:
+Publish the config file:
 
 ```bash
 php artisan vendor:publish --tag="bookflow-config"
 ```
 
-This is the contents of the published config file:
-
-```php
-return [
-];
-```
-
-Optionally, you can publish the views using
+Optionally, publish the views:
 
 ```bash
 php artisan vendor:publish --tag="bookflow-views"
 ```
 
-## Usage
+## Configuration
+
+After publishing the config file, you can configure the pricing strategies in `config/bookflow.php`:
 
 ```php
-$bookflow = new SolutionForest\Bookflow();
-echo $bookflow->echoPhrase('Hello, SolutionForest!');
+return [
+    'pricing' => [
+        'strategies' => [
+            'fixed' => \SolutionForest\Bookflow\Services\PricingStrategies\FixedPriceStrategy::class,
+            'hour' => \SolutionForest\Bookflow\Services\PricingStrategies\TimeBasedPricingStrategy::class,
+            'day' => \SolutionForest\Bookflow\Services\PricingStrategies\TimeBasedPricingStrategy::class,
+        ],
+        'custom_strategies' => [
+            // Add your custom strategies here
+            // 'group' => \App\Services\PricingStrategies\GroupBookingStrategy::class,
+        ],
+        'time_based' => [
+            'round_up' => true,
+            'minimum_units' => 1,
+        ],
+    ],
+];
+```
+
+## Usage
+
+### Basic Booking
+
+```php
+use SolutionForest\Bookflow\Models\Booking;
+use SolutionForest\Bookflow\Models\Rate;
+
+// Create a rate
+$rate = Rate::create([
+    'name' => 'Standard Rate',
+    'price' => 100,
+    'strategy' => 'hour', // 'fixed', 'hour', or 'day'
+]);
+
+// Create a booking
+$booking = Booking::create([
+    'rate_id' => $rate->id,
+    'start_time' => now(),
+    'end_time' => now()->addHours(2),
+    // Additional booking details
+]);
+
+// Calculate booking price
+$price = $booking->calculatePrice();
+```
+
+### Using the HasBookings Trait
+
+Add booking capabilities to your models:
+
+```php
+use SolutionForest\Bookflow\Traits\HasBookings;
+
+class Room extends Model
+{
+    use HasBookings;
+
+    // Your model implementation
+}
+
+// Usage
+$room = Room::find(1);
+$bookings = $room->bookings;
+```
+
+### Custom Pricing Strategy
+
+Create a custom pricing strategy:
+
+```php
+use SolutionForest\Bookflow\Services\PricingStrategies\PricingStrategy;
+
+class GroupBookingStrategy implements PricingStrategy
+{
+    public function calculate(Booking $booking): float
+    {
+        // Your custom pricing logic
+        return $booking->rate->price * $booking->group_size * 0.9; // 10% group discount
+    }
+}
+```
+
+Register your custom strategy in `config/bookflow.php`:
+
+```php
+'custom_strategies' => [
+    'group' => \App\Services\PricingStrategies\GroupBookingStrategy::class,
+],
 ```
 
 ## Testing

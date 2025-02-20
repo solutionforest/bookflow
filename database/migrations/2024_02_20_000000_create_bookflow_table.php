@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('bookflow_rates', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->decimal('price', 10, 2);
+            $table->decimal('price', 10, 2)->nullable();
             $table->string('unit'); // fixed, hour, day
             $table->time('starts_at')->nullable();
             $table->time('ends_at')->nullable();

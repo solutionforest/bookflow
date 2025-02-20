@@ -1,0 +1,5 @@
+parameters:
+    ignoreErrors:
+        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::\$id\.#'
+        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::\$starts_at\.#'
+        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::\$ends_at\.#'
