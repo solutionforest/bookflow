@@ -5,6 +5,7 @@ namespace SolutionForest\Bookflow\Traits;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use SolutionForest\Bookflow\Models\Booking;
 use SolutionForest\Bookflow\Models\Rate;
+use Illuminate\Database\Eloquent\Model;
 
 trait HasBookings
 {
@@ -28,7 +29,7 @@ trait HasBookings
             ->where(function ($query) use ($start, $end) {
                 $query->where(function ($q) use ($start, $end) {
                     $q->where('starts_at', '<', $end)
-                      ->where('ends_at', '>', $start);
+                        ->where('ends_at', '>', $start);
                 });
             })
             ->where('status', 'confirmed');
@@ -39,22 +40,31 @@ trait HasBookings
             });
         }
 
-        return !$query->where('bookable_type', get_class($this))
-                      ->where('bookable_id', $this->id)
-                      ->exists();
+        return ! $query->where('bookable_type', get_class($this))
+            ->where('bookable_id', $this->id)
+            ->exists();
     }
 
     public function getAvailableRates(\DateTime $dateTime, ?string $serviceType = null)
     {
         $query = $this->rates();
-        
+
         if ($serviceType) {
             $query->where('service_type', $serviceType);
         }
 
-        return $query->get()->filter(function ($rate) use ($dateTime) {
-            return $rate->isAvailableForDateTime($dateTime);
+        return $query->get()->filter(function (Model $rate) use ($dateTime) {
+            return $rate instanceof Rate && $rate->isAvailableForDateTime($dateTime);
         })->values();
+    }
+
+    public function isAvailableForDateTime(\DateTime $dateTime): bool
+    {
+        $rate = $this->rates()->get()->first(function (Model $rate) use ($dateTime) {
+            return $rate instanceof Rate && $rate->isAvailableForDateTime($dateTime);
+        });
+
+        return $rate !== null;
     }
 
     public function getServiceTypes(): array

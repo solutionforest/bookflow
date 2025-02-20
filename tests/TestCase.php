@@ -5,9 +5,13 @@ namespace SolutionForest\Bookflow\Tests;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
 use SolutionForest\Bookflow\BookflowServiceProvider;
+use SolutionForest\Bookflow\Tests\TestResource;
 
 class TestCase extends Orchestra
 {
+    protected TestResource $resource;
+    protected $customer;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -18,7 +22,7 @@ class TestCase extends Orchestra
 
         // Refresh migrations to ensure clean database state
         $this->artisan('migrate:fresh');
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         // Create test tables for resources and customers
         $this->createTestTables();

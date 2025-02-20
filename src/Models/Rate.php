@@ -59,16 +59,16 @@ class Rate extends Model
 
     protected function setStartsAtAttribute($value)
     {
-        if (is_string($value) && !str_contains($value, ' ')) {
-            $value = date('Y-m-d ') . $value;
+        if (is_string($value) && ! str_contains($value, ' ')) {
+            $value = date('Y-m-d ').$value;
         }
         $this->attributes['starts_at'] = $value;
     }
 
     protected function setEndsAtAttribute($value)
     {
-        if (is_string($value) && !str_contains($value, ' ')) {
-            $value = date('Y-m-d ') . $value;
+        if (is_string($value) && ! str_contains($value, ' ')) {
+            $value = date('Y-m-d ').$value;
         }
         $this->attributes['ends_at'] = $value;
     }
@@ -100,29 +100,47 @@ class Rate extends Model
         }
 
         $dayOfWeek = (int) $dateTime->format('N');
-        $timeOfDay = $dateTime->format('H:i:s');
-        $startsAt = $this->starts_at ? $this->starts_at->format('H:i:s') : '00:00:00';
-        $endsAt = $this->ends_at ? $this->ends_at->format('H:i:s') : '23:59:59';
-
-        return in_array($dayOfWeek, $this->days_of_week)
-            && $timeOfDay >= $startsAt
-            && $timeOfDay <= $endsAt;
-    }
-
-    public function isAvailableForPeriod(\DateTime $start, \DateTime $end): bool
-    {
-        if (empty($this->days_of_week) || !$this->starts_at || !$this->ends_at) {
-            return true;
+        if (! in_array($dayOfWeek, $this->days_of_week)) {
+            return false;
         }
 
-        $currentDateTime = clone $start;
-        while ($currentDateTime <= $end) {
-            if (!$this->isAvailableForDateTime($currentDateTime)) {
-                return false;
-            }
-            $currentDateTime->modify('+1 hour');
+        if ($this->starts_at && $this->ends_at) {
+            $time = $dateTime->format('H:i:s');
+            return $time >= $this->starts_at->format('H:i:s') && $time <= $this->ends_at->format('H:i:s');
         }
 
         return true;
+    }
+
+    public function calculateUnits(\DateTime $startTime, \DateTime $endTime): int
+    {
+        $diffInMinutes = $endTime->diff($startTime)->i + ($endTime->diff($startTime)->h * 60);
+
+        switch ($this->unit) {
+            case 'fixed':
+                return 1;
+            case 'hour':
+                return (int) ceil($diffInMinutes / 60);
+            case 'day':
+                return (int) ceil($diffInMinutes / (24 * 60));
+            default:
+                return 0;
+        }
+    }
+
+    /**
+     * Calculate the total price based on the number of units.
+     *
+     * @param int $units The number of units to calculate the price for
+     * @return float The total price
+     * @throws \InvalidArgumentException If units is not a positive integer
+     */
+    public function calculateTotalPrice(int $units): float
+    {
+        if ($units <= 0) {
+            throw new \InvalidArgumentException('Units must be a positive integer');
+        }
+
+        return (float) ($this->price * $units);
     }
 }

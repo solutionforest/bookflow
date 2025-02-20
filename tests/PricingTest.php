@@ -84,7 +84,7 @@ test('throws exception for invalid price configuration', function () {
 
     $calculator = new PricingCalculator($rate);
 
-    expect(fn() => $calculator->calculate(
+    expect(fn () => $calculator->calculate(
         new DateTime('2024-01-01 10:00:00'),
         new DateTime('2024-01-01 12:00:00')
     ))->toThrow(PricingException::class);
