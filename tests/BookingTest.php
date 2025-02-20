@@ -1,185 +1,191 @@
 <?php
 
+namespace SolutionForest\Bookflow\Tests;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon as DateTime;
 use SolutionForest\Bookflow\Models\Booking;
 use SolutionForest\Bookflow\Models\Rate;
-use SolutionForest\Bookflow\Traits\HasBookings;
 
-beforeEach(function () {
-    $this->resource = new class extends Model
+class BookingTest extends TestCase
+{
+    protected TestResource $resource;
+
+    /** @var Model */
+    protected $customer;
+
+    protected function setUp(): void
     {
-        use HasBookings;
+        parent::setUp();
 
-        protected $table = 'resources';
+        $this->resource = new TestResource;
+        $this->resource->save();
 
-        public function save(array $options = [])
+        $this->customer = new class extends Model
         {
-            if (! $this->exists) {
-                $this->id = 1;
-                $this->exists = true;
+            protected $table = 'customers';
+
+            protected $guarded = [];
+
+            protected $fillable = ['*'];
+
+            public $id;
+
+            public function save(array $options = [])
+            {
+                if (! $this->exists) {
+                    $this->id = 1;
+                    $this->exists = true;
+                }
+
+                return true;
             }
+        };
 
-            return true;
-        }
-    };
+        $this->customer->save();
+    }
 
-    $this->resource->save();
-
-    $this->customer = new class extends Model
+    public function test_can_create_a_booking()
     {
-        protected $table = 'customers';
+        $rate = Rate::create([
+            'name' => 'Standard Rate',
+            'price' => 100.00,
+            'unit' => 'hour',
+            'starts_at' => '09:00',
+            'ends_at' => '17:00',
+            'days_of_week' => [1, 2, 3, 4, 5],
+            'minimum_units' => 1,
+            'maximum_units' => 8,
+            'resource_type' => get_class($this->resource),
+            'resource_id' => 1,
+            'service_type' => 'standard',
+        ]);
 
-        public function save(array $options = [])
-        {
-            if (! $this->exists) {
-                $this->id = 1;
-                $this->exists = true;
-            }
+        $booking = Booking::create([
+            'bookable_type' => get_class($this->resource),
+            'bookable_id' => 1,
+            'customer_type' => get_class($this->customer),
+            'customer_id' => 1,
+            'rate_id' => $rate->id,
+            'starts_at' => new DateTime('2024-01-01 10:00:00'),
+            'ends_at' => new DateTime('2024-01-01 12:00:00'),
+            'price' => 100.00,
+            'quantity' => 2,
+            'total' => 200.00,
+            'status' => 'confirmed',
+        ]);
 
-            return true;
-        }
-    };
+        expect($booking->exists)->toBeTrue()
+            ->and($booking->status)->toBe('confirmed')
+            ->and($booking->total)->toEqual(200.00);
+    }
 
-    $this->customer->save();
-});
+    public function test_can_check_resource_availability()
+    {
+        $start = new DateTime('2024-01-01 10:00:00');
+        $end = new DateTime('2024-01-01 12:00:00');
 
-test('can create a booking', function () {
-    $rate = Rate::create([
-        'name' => 'Standard Rate',
-        'price' => 100.00,
-        'unit' => 'hour',
-        'starts_at' => '09:00',
-        'ends_at' => '17:00',
-        'days_of_week' => [1, 2, 3, 4, 5],
-        'minimum_units' => 1,
-        'maximum_units' => 8,
-        'resource_type' => get_class($this->resource),
-        'resource_id' => 1,
-        'service_type' => 'standard',
-    ]);
+        expect($this->resource->isAvailable($start, $end))->toBeTrue();
 
-    $booking = Booking::create([
-        'bookable_type' => get_class($this->resource),
-        'bookable_id' => 1,
-        'customer_type' => get_class($this->customer),
-        'customer_id' => 1,
-        'rate_id' => $rate->id,
-        'starts_at' => new DateTime('2024-01-01 10:00:00'),
-        'ends_at' => new DateTime('2024-01-01 12:00:00'),
-        'price' => 100.00,
-        'quantity' => 2,
-        'total' => 200.00,
-        'status' => 'confirmed',
-    ]);
+        Booking::create([
+            'bookable_type' => get_class($this->resource),
+            'bookable_id' => 1,
+            'customer_type' => get_class($this->customer),
+            'customer_id' => 1,
+            'starts_at' => $start,
+            'ends_at' => $end,
+            'price' => 100.00,
+            'quantity' => 2,
+            'total' => 200.00,
+            'status' => 'confirmed',
+        ]);
 
-    expect($booking->exists)->toBeTrue()
-        ->and($booking->status)->toBe('confirmed')
-        ->and($booking->total)->toEqual(200.00);
-});
+        expect($this->resource->isAvailable($start, $end))->toBeFalse();
+    }
 
-test('can check resource availability', function () {
-    $start = new DateTime('2024-01-01 10:00:00');
-    $end = new DateTime('2024-01-01 12:00:00');
+    public function test_can_get_available_rates_for_datetime()
+    {
+        $rate1 = Rate::create([
+            'name' => 'Day Rate',
+            'price' => 100.00,
+            'unit' => 'hour',
+            'starts_at' => '09:00',
+            'ends_at' => '17:00',
+            'days_of_week' => [1, 2, 3, 4, 5],
+            'minimum_units' => 1,
+            'maximum_units' => 8,
+            'resource_type' => get_class($this->resource),
+            'resource_id' => 1,
+            'service_type' => 'standard',
+        ]);
 
-    expect($this->resource->isAvailable($start, $end))->toBeTrue();
+        $rate2 = Rate::create([
+            'name' => 'Night Rate',
+            'price' => 150.00,
+            'unit' => 'hour',
+            'starts_at' => '17:00',
+            'ends_at' => '23:00',
+            'days_of_week' => [1, 2, 3, 4, 5],
+            'minimum_units' => 1,
+            'maximum_units' => 6,
+            'resource_type' => get_class($this->resource),
+            'resource_id' => 1,
+            'service_type' => 'premium',
+        ]);
 
-    Booking::create([
-        'bookable_type' => get_class($this->resource),
-        'bookable_id' => 1,
-        'customer_type' => get_class($this->customer),
-        'customer_id' => 1,
-        'starts_at' => $start,
-        'ends_at' => $end,
-        'price' => 100.00,
-        'quantity' => 2,
-        'total' => 200.00,
-        'status' => 'confirmed',
-    ]);
+        $dateTime = new DateTime('2024-01-01 10:00:00'); // Monday at 10 AM
+        $availableRates = $this->resource->getAvailableRates($dateTime);
 
-    expect($this->resource->isAvailable($start, $end))->toBeFalse();
-});
+        expect($availableRates)->toHaveCount(1)
+            ->and($availableRates[0]->id)->toBe($rate1->id);
 
-test('can get available rates for datetime', function () {
-    $rate1 = Rate::create([
-        'name' => 'Day Rate',
-        'price' => 100.00,
-        'unit' => 'hour',
-        'starts_at' => '09:00',
-        'ends_at' => '17:00',
-        'days_of_week' => [1, 2, 3, 4, 5],
-        'minimum_units' => 1,
-        'maximum_units' => 8,
-        'resource_type' => get_class($this->resource),
-        'resource_id' => 1,
-        'service_type' => 'standard',
-    ]);
+        $dateTime = new DateTime('2024-01-01 20:00:00'); // Monday at 8 PM
+        $availableRates = $this->resource->getAvailableRates($dateTime);
 
-    $rate2 = Rate::create([
-        'name' => 'Night Rate',
-        'price' => 150.00,
-        'unit' => 'hour',
-        'starts_at' => '17:00',
-        'ends_at' => '23:00',
-        'days_of_week' => [1, 2, 3, 4, 5],
-        'minimum_units' => 1,
-        'maximum_units' => 6,
-        'resource_type' => get_class($this->resource),
-        'resource_id' => 1,
-        'service_type' => 'premium',
-    ]);
+        expect($availableRates)->toHaveCount(1)
+            ->and($availableRates[0]->id)->toBe($rate2->id);
 
-    $dateTime = new DateTime('2024-01-01 10:00:00'); // Monday at 10 AM
-    $availableRates = $this->resource->getAvailableRates($dateTime);
+        // Test with service type filter
+        $availableRates = $this->resource->getAvailableRates($dateTime, 'standard');
+        expect($availableRates)->toBeEmpty();
 
-    expect($availableRates)->toHaveCount(1)
-        ->and($availableRates[0]->id)->toBe($rate1->id);
+        $availableRates = $this->resource->getAvailableRates($dateTime, 'premium');
+        expect($availableRates)->toHaveCount(1)
+            ->and($availableRates[0]->id)->toBe($rate2->id);
+    }
 
-    $dateTime = new DateTime('2024-01-01 20:00:00'); // Monday at 8 PM
-    $availableRates = $this->resource->getAvailableRates($dateTime);
+    public function test_can_get_service_types()
+    {
+        Rate::create([
+            'name' => 'Standard Rate',
+            'price' => 100.00,
+            'unit' => 'hour',
+            'starts_at' => '09:00',
+            'ends_at' => '17:00',
+            'days_of_week' => [1, 2, 3, 4, 5],
+            'minimum_units' => 1,
+            'maximum_units' => 8,
+            'resource_type' => get_class($this->resource),
+            'resource_id' => 1,
+            'service_type' => 'standard',
+        ]);
 
-    expect($availableRates)->toHaveCount(1)
-        ->and($availableRates[0]->id)->toBe($rate2->id);
+        Rate::create([
+            'name' => 'Premium Rate',
+            'price' => 150.00,
+            'unit' => 'hour',
+            'starts_at' => '09:00',
+            'ends_at' => '17:00',
+            'days_of_week' => [1, 2, 3, 4, 5],
+            'minimum_units' => 1,
+            'maximum_units' => 8,
+            'resource_type' => get_class($this->resource),
+            'resource_id' => 1,
+            'service_type' => 'premium',
+        ]);
 
-    // Test with service type filter
-    $availableRates = $this->resource->getAvailableRates($dateTime, 'standard');
-    expect($availableRates)->toBeEmpty();
+        $serviceTypes = $this->resource->getServiceTypes();
 
-    $availableRates = $this->resource->getAvailableRates($dateTime, 'premium');
-    expect($availableRates)->toHaveCount(1)
-        ->and($availableRates[0]->id)->toBe($rate2->id);
-});
-
-test('can get service types', function () {
-    Rate::create([
-        'name' => 'Standard Rate',
-        'price' => 100.00,
-        'unit' => 'hour',
-        'starts_at' => '09:00',
-        'ends_at' => '17:00',
-        'days_of_week' => [1, 2, 3, 4, 5],
-        'minimum_units' => 1,
-        'maximum_units' => 8,
-        'resource_type' => get_class($this->resource),
-        'resource_id' => 1,
-        'service_type' => 'standard',
-    ]);
-
-    Rate::create([
-        'name' => 'Premium Rate',
-        'price' => 150.00,
-        'unit' => 'hour',
-        'starts_at' => '09:00',
-        'ends_at' => '17:00',
-        'days_of_week' => [1, 2, 3, 4, 5],
-        'minimum_units' => 1,
-        'maximum_units' => 8,
-        'resource_type' => get_class($this->resource),
-        'resource_id' => 1,
-        'service_type' => 'premium',
-    ]);
-
-    $serviceTypes = $this->resource->getServiceTypes();
-
-    expect($serviceTypes)->toBe(['standard', 'premium']);
-});
+        expect($serviceTypes)->toBe(['standard', 'premium']);
+    }
+}

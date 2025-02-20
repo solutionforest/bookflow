@@ -8,6 +8,10 @@ use SolutionForest\Bookflow\BookflowServiceProvider;
 
 class TestCase extends Orchestra
 {
+    protected TestResource $resource;
+
+    protected $customer;
+
     protected function setUp(): void
     {
         parent::setUp();

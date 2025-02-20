@@ -2,6 +2,7 @@
 
 namespace SolutionForest\Bookflow\Traits;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use SolutionForest\Bookflow\Models\Booking;
 use SolutionForest\Bookflow\Models\Rate;
@@ -52,9 +53,18 @@ trait HasBookings
             $query->where('service_type', $serviceType);
         }
 
-        return $query->get()->filter(function ($rate) use ($dateTime) {
-            return $rate->isAvailableForDateTime($dateTime);
+        return $query->get()->filter(function (Model $rate) use ($dateTime) {
+            return $rate instanceof Rate && $rate->isAvailableForDateTime($dateTime);
         })->values();
+    }
+
+    public function isAvailableForDateTime(\DateTime $dateTime): bool
+    {
+        $rate = $this->rates()->get()->first(function (Model $rate) use ($dateTime) {
+            return $rate instanceof Rate && $rate->isAvailableForDateTime($dateTime);
+        });
+
+        return $rate !== null;
     }
 
     public function getServiceTypes(): array
