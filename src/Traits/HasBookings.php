@@ -28,7 +28,7 @@ trait HasBookings
             ->where(function ($query) use ($start, $end) {
                 $query->where(function ($q) use ($start, $end) {
                     $q->where('starts_at', '<', $end)
-                      ->where('ends_at', '>', $start);
+                        ->where('ends_at', '>', $start);
                 });
             })
             ->where('status', 'confirmed');
@@ -39,15 +39,15 @@ trait HasBookings
             });
         }
 
-        return !$query->where('bookable_type', get_class($this))
-                      ->where('bookable_id', $this->id)
-                      ->exists();
+        return ! $query->where('bookable_type', get_class($this))
+            ->where('bookable_id', $this->id)
+            ->exists();
     }
 
     public function getAvailableRates(\DateTime $dateTime, ?string $serviceType = null)
     {
         $query = $this->rates();
-        
+
         if ($serviceType) {
             $query->where('service_type', $serviceType);
         }

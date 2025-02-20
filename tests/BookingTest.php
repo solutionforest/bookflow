@@ -15,10 +15,11 @@ beforeEach(function () {
 
         public function save(array $options = [])
         {
-            if (!$this->exists) {
+            if (! $this->exists) {
                 $this->id = 1;
                 $this->exists = true;
             }
+
             return true;
         }
     };
@@ -31,10 +32,11 @@ beforeEach(function () {
 
         public function save(array $options = [])
         {
-            if (!$this->exists) {
+            if (! $this->exists) {
                 $this->id = 1;
                 $this->exists = true;
             }
+
             return true;
         }
     };

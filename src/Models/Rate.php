@@ -59,16 +59,16 @@ class Rate extends Model
 
     protected function setStartsAtAttribute($value)
     {
-        if (is_string($value) && !str_contains($value, ' ')) {
-            $value = date('Y-m-d ') . $value;
+        if (is_string($value) && ! str_contains($value, ' ')) {
+            $value = date('Y-m-d ').$value;
         }
         $this->attributes['starts_at'] = $value;
     }
 
     protected function setEndsAtAttribute($value)
     {
-        if (is_string($value) && !str_contains($value, ' ')) {
-            $value = date('Y-m-d ') . $value;
+        if (is_string($value) && ! str_contains($value, ' ')) {
+            $value = date('Y-m-d ').$value;
         }
         $this->attributes['ends_at'] = $value;
     }
@@ -111,13 +111,13 @@ class Rate extends Model
 
     public function isAvailableForPeriod(\DateTime $start, \DateTime $end): bool
     {
-        if (empty($this->days_of_week) || !$this->starts_at || !$this->ends_at) {
+        if (empty($this->days_of_week) || ! $this->starts_at || ! $this->ends_at) {
             return true;
         }
 
         $currentDateTime = clone $start;
         while ($currentDateTime <= $end) {
-            if (!$this->isAvailableForDateTime($currentDateTime)) {
+            if (! $this->isAvailableForDateTime($currentDateTime)) {
                 return false;
             }
             $currentDateTime->modify('+1 hour');

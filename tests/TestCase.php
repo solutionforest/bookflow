@@ -18,7 +18,7 @@ class TestCase extends Orchestra
 
         // Refresh migrations to ensure clean database state
         $this->artisan('migrate:fresh');
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         // Create test tables for resources and customers
         $this->createTestTables();
