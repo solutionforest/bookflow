@@ -27,6 +27,8 @@ BookFlow is a flexible Laravel package for managing bookings and pricing strateg
 
 ## Installation
 
+> **Requires [PHP 8.3+](https://php.net/releases/), and [Laravel 11.0+](https://laravel.com)**.
+
 You can install the package via composer:
 
 ```bash
