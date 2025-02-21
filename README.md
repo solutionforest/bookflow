@@ -121,35 +121,52 @@ $dailyRate = Rate::create([
 
 ### Basic Booking Operations
 
+BookFlow provides multiple ways to create bookings. Here's the recommended fluent interface:
+
 ```php
 use SolutionForest\Bookflow\Models\Booking;
 
-// Create a booking
+// Create a booking using the fluent interface
+$booking = Booking::make()
+    ->forRate($hourlyRate)
+    ->from(now())
+    ->to(now()->addHours(3))
+    ->forCustomer($customer)
+    ->forBookable($room)
+    ->withQuantity(2)
+    ->withNotes('Special requirements')
+    ->save();
+
+// Alternative method using create
 $booking = Booking::create([
     'rate_id' => $hourlyRate->id,
-    'start_time' => now(),
-    'end_time' => now()->addHours(3),
+    'starts_at' => now(),
+    'ends_at' => now()->addHours(3),
     'customer_id' => $customer->id,
+    'customer_type' => get_class($customer),
     'bookable_id' => $room->id,
     'bookable_type' => Room::class,
+    'quantity' => 1,
 ]);
 
-// Calculate booking price
-$price = $booking->calculatePrice();
-
 // Check booking status
-$isConfirmed = $booking->isConfirmed();
-$isPending = $booking->isPending();
+$isPast = $booking->isPast();
+$isCurrent = $booking->isCurrent();
+$isFuture = $booking->isFuture();
 $isCancelled = $booking->isCancelled();
 
-// Update booking status
-$booking->confirm();
-$booking->cancel();
+// Get related bookings
+$pastBookings = $booking->past();
+$currentBookings = $booking->current();
+$futureBookings = $booking->future();
+$cancelledBookings = $booking->cancelled();
 ```
 
 ### Checking Availability
 
 ```php
+use SolutionForest\Bookflow\Helpers\BookingHelper;
+
 // Check if a room is available for a specific time period
 $room = Room::find(1);
 $isAvailable = $room->isAvailable(
@@ -164,12 +181,26 @@ $availableRates = $room->getAvailableRates(
 );
 
 // Find available time slots
-use SolutionForest\Bookflow\Helpers\BookingHelper;
-
 $timeSlots = BookingHelper::findAvailableTimeSlots(
     bookable: $room,
     date: now()->toDateString(),
-    duration: 60 // minutes
+    duration: 60, // minutes
+    rate: $hourlyRate // optional: filter by specific rate
+);
+
+// Advanced availability checking
+$availability = BookingHelper::checkAvailability(
+    bookable: $room,
+    start: now(),
+    end: now()->addDays(7),
+    rate: $hourlyRate,
+    quantity: 2 // check if multiple units are available
+);
+
+// Get conflicting bookings
+$conflicts = $room->getConflictingBookings(
+    start: now(),
+    end: now()->addHours(2)
 );
 ```
 
