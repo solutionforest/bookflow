@@ -37,6 +37,8 @@ return new class extends Migration
             $table->integer('quantity')->default(1);
             $table->decimal('total', 10, 2);
             $table->string('status')->default('pending');
+            $table->text('notes')->nullable();
+            $table->foreignId('recurring_booking_id')->nullable()->constrained('bookflow_recurring_bookings')->nullOnDelete();
             $table->timestamps();
 
             $table->index(['bookable_type', 'bookable_id']);

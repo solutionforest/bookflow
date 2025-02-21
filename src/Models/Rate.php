@@ -2,26 +2,20 @@
 
 namespace SolutionForest\Bookflow\Models;
 
+use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
- * @property string|null $unit
- * @property float|null $price
+ * @property float $price
+ * @property string $unit
+ * @property DateTime|null $starts_at
+ * @property DateTime|null $ends_at
  * @property int|null $minimum_units
  * @property int|null $maximum_units
- * @property string $name
- * @property string|null $description
- * @property \DateTime|null $starts_at
- * @property \DateTime|null $ends_at
- * @property array $days_of_week
  * @property string|null $resource_type
  * @property int|null $resource_id
  * @property string|null $service_type
- * @property int|null $duration_minutes
- * @property int|null $break_minutes
  */
 class Rate extends Model
 {
@@ -31,7 +25,6 @@ class Rate extends Model
 
     protected $fillable = [
         'name',
-        'description',
         'price',
         'unit',
         'starts_at',
@@ -42,107 +35,52 @@ class Rate extends Model
         'resource_type',
         'resource_id',
         'service_type',
-        'duration_minutes',
-        'break_minutes',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'minimum_units' => 'integer',
-        'maximum_units' => 'integer',
         'days_of_week' => 'array',
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
-        'duration_minutes' => 'integer',
-        'break_minutes' => 'integer',
-    ];
-
-    protected function setStartsAtAttribute($value)
-    {
-        if (is_string($value) && ! str_contains($value, ' ')) {
-            $value = date('Y-m-d ').$value;
-        }
-        $this->attributes['starts_at'] = $value;
-    }
-
-    protected function setEndsAtAttribute($value)
-    {
-        if (is_string($value) && ! str_contains($value, ' ')) {
-            $value = date('Y-m-d ').$value;
-        }
-        $this->attributes['ends_at'] = $value;
-    }
-
-    protected $attributes = [
-        'days_of_week' => '[]',
-        'minimum_units' => 1,
+        'minimum_units' => 'integer',
+        'maximum_units' => 'integer',
     ];
 
     public function requiresPricing(): bool
     {
-        return $this->price !== null;
+        return $this->price > 0;
     }
 
-    public function resource(): MorphTo
+    public function isAvailableForDateTime(DateTime $dateTime): bool
     {
-        return $this->morphTo();
-    }
-
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class);
-    }
-
-    public function isAvailableForDateTime(\DateTime $dateTime): bool
-    {
-        if (empty($this->days_of_week)) {
-            return true;
-        }
-
-        $dayOfWeek = (int) $dateTime->format('N');
-        if (! in_array($dayOfWeek, $this->days_of_week)) {
-            return false;
-        }
-
-        if ($this->starts_at && $this->ends_at) {
+        // Check time constraints
+        if ($this->starts_at || $this->ends_at) {
             $time = $dateTime->format('H:i:s');
+            $startTime = $this->starts_at ? $this->starts_at->format('H:i:s') : '00:00:00';
+            $endTime = $this->ends_at ? $this->ends_at->format('H:i:s') : '23:59:59';
 
-            return $time >= $this->starts_at->format('H:i:s') && $time <= $this->ends_at->format('H:i:s');
+            if ($time < $startTime || $time > $endTime) {
+                return false;
+            }
         }
 
-        return true;
+        // Check days of week
+        $dayOfWeek = $dateTime->format('w');
+        $availableDays = $this->days_of_week ?? [0, 1, 2, 3, 4, 5, 6];
+
+        return in_array((int) $dayOfWeek, $availableDays);
     }
 
-    public function calculateUnits(\DateTime $startTime, \DateTime $endTime): int
+    public function calculateUnits(DateTime $startDate, DateTime $endDate): int
     {
-        $diffInMinutes = $endTime->diff($startTime)->i + ($endTime->diff($startTime)->h * 60);
+        $interval = $startDate->diff($endDate);
+        $hours = $interval->h + ($interval->days * 24);
 
-        switch ($this->unit) {
-            case 'fixed':
-                return 1;
-            case 'hour':
-                return (int) ceil($diffInMinutes / 60);
-            case 'day':
-                return (int) ceil($diffInMinutes / (24 * 60));
-            default:
-                return 0;
-        }
+        return max($this->minimum_units ?? 1, $hours);
     }
 
-    /**
-     * Calculate the total price based on the number of units.
-     *
-     * @param  int  $units  The number of units to calculate the price for
-     * @return float The total price
-     *
-     * @throws \InvalidArgumentException If units is not a positive integer
-     */
     public function calculateTotalPrice(int $units): float
     {
-        if ($units <= 0) {
-            throw new \InvalidArgumentException('Units must be a positive integer');
-        }
-
-        return (float) ($this->price * $units);
+        return $this->price * $units;
     }
 }
