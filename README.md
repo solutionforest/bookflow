@@ -1,11 +1,18 @@
 # BookFlow
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/lam0819/bookflow.svg?style=flat-square)](https://packagist.org/packages/lam0819/bookflow)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/lam0819/bookflow/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/lam0819/bookflow/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/lam0819/bookflow/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/lam0819/bookflow/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/lam0819/bookflow.svg?style=flat-square)](https://packagist.org/packages/lam0819/bookflow)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/solutionforest/bookflow.svg?style=flat-square)](https://packagist.org/packages/solutionforest/bookflow)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/solutionforest/bookflow/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/solutionforest/bookflow/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/solutionforest/bookflow/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/solutionforest/bookflow/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/solutionforest/bookflow.svg?style=flat-square)](https://packagist.org/packages/solutionforest/bookflow)
 
 BookFlow is a flexible Laravel package for managing bookings and pricing strategies. It provides a robust foundation for implementing booking systems with customizable pricing calculations.
+
+> ⚠️ **WARNING: DEVELOPMENT STATUS**⚠️ 
+> 
+> This package is currently under active development and is **NOT READY FOR PRODUCTION USE**. 
+> 
+> Features may be incomplete, APIs might change, and there could be breaking changes. Use at your own risk in development environments only.
+
 
 ## Features
 
@@ -23,7 +30,7 @@ BookFlow is a flexible Laravel package for managing bookings and pricing strateg
 You can install the package via composer:
 
 ```bash
-composer require lam0819/bookflow
+composer require solutionforest/bookflow
 ```
 
 Publish and run the migrations:
