@@ -22,6 +22,123 @@ use SolutionForest\Bookflow\Exceptions\BookingException;
  */
 class Booking extends Model
 {
+    /**
+     * Scope a query to only include past bookings.
+     */
+    public function scopePast($query)
+    {
+        return $query->where('ends_at', '<', now());
+    }
+
+    /**
+     * Scope a query to only include current bookings.
+     */
+    public function scopeCurrent($query)
+    {
+        return $query->where('starts_at', '<=', now())
+            ->where('ends_at', '>=', now());
+    }
+
+    /**
+     * Scope a query to only include future bookings.
+     */
+    public function scopeFuture($query)
+    {
+        return $query->where('starts_at', '>', now());
+    }
+
+    /**
+     * Scope a query to only include cancelled bookings.
+     */
+    public function scopeCancelled($query)
+    {
+        return $query->where('status', 'cancelled');
+    }
+
+    /**
+     * Scope a query to only include active (not cancelled) bookings.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', '!=', 'cancelled');
+    }
+
+    /**
+     * Check if the booking is in the past.
+     */
+    public function isPast(): bool
+    {
+        return $this->ends_at < now();
+    }
+
+    /**
+     * Check if the booking is current.
+     */
+    public function isCurrent(): bool
+    {
+        return $this->starts_at <= now() && $this->ends_at >= now();
+    }
+
+    /**
+     * Check if the booking is in the future.
+     */
+    public function isFuture(): bool
+    {
+        return $this->starts_at > now();
+    }
+
+    /**
+     * Check if the booking is cancelled.
+     */
+    public function isCancelled(): bool
+    {
+        return $this->status === 'cancelled';
+    }
+
+    /**
+     * Get past bookings related to this booking's bookable.
+     */
+    public function past()
+    {
+        return static::where('bookable_type', $this->bookable_type)
+            ->where('bookable_id', $this->bookable_id)
+            ->past()
+            ->get();
+    }
+
+    /**
+     * Get future bookings related to this booking's bookable.
+     */
+    public function future()
+    {
+        return static::where('bookable_type', $this->bookable_type)
+            ->where('bookable_id', $this->bookable_id)
+            ->future()
+            ->get();
+    }
+
+    /**
+     * Get current bookings related to this booking's bookable.
+     */
+    public function current()
+    {
+        return static::where('bookable_type', $this->bookable_type)
+            ->where('bookable_id', $this->bookable_id)
+            ->current()
+            ->get();
+    }
+
+    /**
+     * Get cancelled bookings related to this booking's bookable.
+     */
+    public function cancelled()
+    {
+        return static::where('bookable_type', $this->bookable_type)
+            ->where('bookable_id', $this->bookable_id)
+            ->cancelled()
+            ->get();
+    }
+
     protected $table = 'bookflow_bookings';
 
     protected $fillable = [
@@ -48,12 +165,31 @@ class Booking extends Model
         'quantity' => 'integer',
     ];
 
-    public function bookable(): MorphTo
+    /**
+     * Create a new booking instance with the given attributes.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public static function make(array $attributes = []): self
+    {
+        $instance = new self;
+        $instance->fill($attributes);
+
+        return $instance;
+    }
+
+    /**
+     * Get the customer that owns the booking.
+     */
+    public function customer(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function customer(): MorphTo
+    /**
+     * Get the bookable model that the booking belongs to.
+     */
+    public function bookable(): MorphTo
     {
         return $this->morphTo();
     }

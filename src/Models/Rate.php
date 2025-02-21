@@ -5,6 +5,7 @@ namespace SolutionForest\Bookflow\Models;
 use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property string $name
@@ -30,58 +31,109 @@ class Rate extends Model
         'unit',
         'starts_at',
         'ends_at',
-        'days_of_week',
         'minimum_units',
         'maximum_units',
         'resource_type',
         'resource_id',
         'service_type',
+        'days_of_week',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'days_of_week' => 'array',
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
         'minimum_units' => 'integer',
         'maximum_units' => 'integer',
+        'days_of_week' => 'array',
     ];
 
-    public function requiresPricing(): bool
+    public function customPrices(): HasMany
     {
-        return $this->price > 0;
+        return $this->hasMany(CustomPrice::class);
     }
 
-    public function isAvailableForDateTime(DateTime $dateTime): bool
+    /**
+     * Calculate the adjusted price for a specific datetime
+     */
+    public function getPriceForDateTime(DateTime $datetime): float
     {
-        // Check time constraints
-        if ($this->starts_at || $this->ends_at) {
-            $time = $dateTime->format('H:i:s');
-            $startTime = $this->starts_at ? $this->starts_at->format('H:i:s') : '00:00:00';
-            $endTime = $this->ends_at ? $this->ends_at->format('H:i:s') : '23:59:59';
+        $basePrice = $this->price;
 
-            if ($time < $startTime || $time > $endTime) {
+        // Find any applicable custom prices
+        /** @var \Illuminate\Database\Eloquent\Collection<int, CustomPrice> $customPrices */
+        $customPrices = $this->customPrices;
+        $customPrice = $customPrices->first(function ($price) use ($datetime) {
+            /** @var CustomPrice $price */
+            return $price->appliesTo($datetime);
+        });
+
+        // Apply custom price modifier if found
+        if ($customPrice instanceof CustomPrice) {
+            return $customPrice->applyTo($basePrice);
+        }
+
+        return $basePrice;
+    }
+
+    /**
+     * Check if the rate requires pricing calculation
+     */
+    public function requiresPricing(): bool
+    {
+        return $this->unit !== 'fixed';
+    }
+
+    /**
+     * Calculate the number of units between two datetimes based on the rate unit
+     */
+    public function calculateUnits(DateTime $start, DateTime $end): float
+    {
+        $diff = $start->diff($end);
+
+        return match ($this->unit) {
+            'hour' => ($diff->days * 24) + $diff->h + ($diff->i / 60),
+            'day' => $diff->days + ($diff->h > 0 || $diff->i > 0 ? 1 : 0),
+            'fixed' => 1,
+            default => throw new \InvalidArgumentException("Unsupported unit type: {$this->unit}")
+        };
+    }
+
+    /**
+     * Calculate the total price for a booking period
+     */
+    public function calculateTotalPrice(DateTime $start, DateTime $end): float
+    {
+        $units = $this->calculateUnits($start, $end);
+        $pricePerUnit = $this->getPriceForDateTime($start);
+
+        return $units * $pricePerUnit;
+    }
+
+    /**
+     * Check if the rate is available for a specific datetime
+     */
+    public function isAvailableForDateTime(DateTime $datetime): bool
+    {
+        // Check if datetime is within rate's time range
+        if ($this->starts_at && $this->ends_at) {
+            $currentTime = (clone $datetime)->setDate(2000, 1, 1);
+            $startTime = (clone $this->starts_at)->setDate(2000, 1, 1);
+            $endTime = (clone $this->ends_at)->setDate(2000, 1, 1);
+
+            if ($currentTime < $startTime || $currentTime > $endTime) {
                 return false;
             }
         }
 
-        // Check days of week
-        $dayOfWeek = $dateTime->format('w');
-        $availableDays = $this->days_of_week ?? [0, 1, 2, 3, 4, 5, 6];
+        // Check if the day of week is allowed
+        if (! empty($this->days_of_week)) {
+            $dayOfWeek = (int) $datetime->format('N'); // 1 (Monday) to 7 (Sunday)
+            if (! in_array($dayOfWeek, $this->days_of_week)) {
+                return false;
+            }
+        }
 
-        return in_array((int) $dayOfWeek, $availableDays);
-    }
-
-    public function calculateUnits(DateTime $startDate, DateTime $endDate): int
-    {
-        $interval = $startDate->diff($endDate);
-        $hours = $interval->h + ($interval->days * 24);
-
-        return max($this->minimum_units ?? 1, $hours);
-    }
-
-    public function calculateTotalPrice(int $units): float
-    {
-        return $this->price * $units;
+        return true;
     }
 }

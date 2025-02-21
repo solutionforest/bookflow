@@ -27,7 +27,7 @@ class BookingFactory extends Factory
             'ends_at' => $endDate,
             'price' => $rate->price,
             'quantity' => $rate->calculateUnits($startDate, $endDate),
-            'total' => $rate->calculateTotalPrice($rate->calculateUnits($startDate, $endDate)),
+            'total' => $rate->calculateTotalPrice($startDate, $endDate),
             'status' => 'confirmed',
             'notes' => $this->faker->sentence,
         ];
@@ -69,7 +69,8 @@ class BookingFactory extends Factory
                 'bookable_id' => $rate->resource_id,
                 'price' => $rate->price,
                 'quantity' => $rate->calculateUnits($startDate, $endDate),
-                'total' => $rate->calculateTotalPrice($rate->calculateUnits($startDate, $endDate)),
+                'total' => $rate->calculateTotalPrice($startDate, $endDate),
+                'status' => $attributes['status'] ?? 'confirmed',
             ];
         });
     }

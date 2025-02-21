@@ -15,6 +15,9 @@ class PricingCalculator
     public function __construct(Rate $rate)
     {
         $this->rate = $rate;
+        if ($this->rate->unit === null) {
+            throw \SolutionForest\Bookflow\Exceptions\PricingException::invalidPriceConfiguration();
+        }
         $this->strategy = $this->createStrategy();
     }
 
@@ -44,16 +47,24 @@ class PricingCalculator
             throw \SolutionForest\Bookflow\Exceptions\PricingException::invalidTimeRange();
         }
 
-        if (! $this->rate->requiresPricing()) {
+        if ($this->rate->unit === null) {
             throw \SolutionForest\Bookflow\Exceptions\PricingException::invalidPriceConfiguration();
         }
 
-        return $this->strategy->calculate(
-            $startTime,
-            $endTime,
-            $this->rate->price,
-            $this->rate->minimum_units,
-            $this->rate->maximum_units
-        );
+        if ($this->rate->price === null) {
+            throw \SolutionForest\Bookflow\Exceptions\PricingException::invalidPriceConfiguration();
+        }
+
+        if ($this->rate->requiresPricing()) {
+            return $this->strategy->calculate(
+                $startTime,
+                $endTime,
+                $this->rate->price,
+                $this->rate->minimum_units,
+                $this->rate->maximum_units
+            );
+        }
+
+        return $this->rate->price;
     }
 }
