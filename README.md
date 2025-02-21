@@ -46,12 +46,6 @@ Publish the config file:
 php artisan vendor:publish --tag="bookflow-config"
 ```
 
-Optionally, publish the views:
-
-```bash
-php artisan vendor:publish --tag="bookflow-views"
-```
-
 ## Configuration
 
 After publishing the config file, you can configure the pricing strategies in `config/bookflow.php`:
