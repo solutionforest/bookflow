@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
+ * @property string $name
  * @property float $price
  * @property string $unit
  * @property DateTime|null $starts_at

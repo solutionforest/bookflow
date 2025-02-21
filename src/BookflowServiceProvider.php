@@ -2,7 +2,6 @@
 
 namespace SolutionForest\Bookflow;
 
-use SolutionForest\Bookflow\Commands\BookflowCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -18,8 +17,7 @@ class BookflowServiceProvider extends PackageServiceProvider
         $package
             ->name('bookflow')
             ->hasConfigFile()
-            ->hasViews()
             ->hasMigration('create_bookflow_table')
-            ->hasCommand(BookflowCommand::class);
+            ->hasCommand(Commands\BookflowCommand::class);
     }
 }
