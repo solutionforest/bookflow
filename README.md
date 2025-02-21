@@ -358,6 +358,29 @@ try {
 }
 ```
 
+### Command-Line Tools
+
+BookFlow provides a command-line tool for checking system configuration and data integrity:
+
+```bash
+# Run all checks
+php artisan bookflow:check --all
+
+# Check rate configurations
+php artisan bookflow:check --rates
+
+# Check for booking conflicts
+php artisan bookflow:check --bookings
+
+# Test pricing calculations
+php artisan bookflow:check --pricing
+```
+
+This command helps you:
+- Validate rate configurations (units, minimum units, etc.)
+- Detect booking conflicts and invalid booking periods
+- Test pricing calculations for all rates
+
 ## Testing
 
 ```bash

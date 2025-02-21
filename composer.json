@@ -1,22 +1,29 @@
 {
     "name": "solution-forest/bookflow",
-    "description": "This is my package bookflow",
+    "description": "Book Flow for Laravel",
     "keywords": [
         "solution-forest",
         "laravel",
         "bookflow"
     ],
     "homepage": "https://github.com/solutionforest/bookflow",
+    "support": {
+        "issues": "https://github.com/solutionforest/bookflow/issues",
+        "source": "https://github.com/solutionforest/bookflow"
+    },
     "license": "MIT",
     "authors": [{
         "name": "alan",
-        "email": "alan@solutionforest.net",
+        "email": "info+package@solutionforest.net",
         "role": "Developer"
     }],
     "require": {
         "php": "^8.2",
         "spatie/laravel-package-tools": "^1.16",
         "illuminate/contracts": "^10.0||^11.0"
+    },
+    "conflict": {
+        "laravel/framework": "<11.0.0"
     },
     "require-dev": {
         "laravel/pint": "^1.14",
