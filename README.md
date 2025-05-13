@@ -32,7 +32,7 @@ BookFlow is a flexible Laravel package for managing bookings and pricing strateg
 You can install the package via composer:
 
 ```bash
-composer require solutionforest/bookflow
+composer require solution-forest/bookflow
 ```
 
 Publish and run the migrations:
