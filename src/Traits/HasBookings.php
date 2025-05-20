@@ -67,6 +67,26 @@ trait HasBookings
         return $rate !== null;
     }
 
+    public function getConflictingBookings(\DateTime $start, \DateTime $end, ?string $serviceType = null)
+    {
+        $query = $this->bookings()
+            ->where(function ($query) use ($start, $end) {
+                $query->where(function ($q) use ($start, $end) {
+                    $q->where('starts_at', '<', $end)
+                        ->where('ends_at', '>', $start);
+                });
+            })
+            ->where('status', 'confirmed');
+
+        if ($serviceType) {
+            $query->whereHas('rate', function ($q) use ($serviceType) {
+                $q->where('service_type', $serviceType);
+            });
+        }
+
+        return $query->get();
+    }
+
     public function getServiceTypes(): array
     {
         return $this->rates()
