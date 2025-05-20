@@ -110,26 +110,26 @@ class BookingHelper
             ->where(function ($query) use ($start, $end) {
                 $query->where(function ($q) use ($start, $end) {
                     $q->where('starts_at', '<', $end)
-                      ->where('ends_at', '>', $start);
+                        ->where('ends_at', '>', $start);
                 });
             })
             ->where('status', 'confirmed');
-            
+
         // If a specific rate is provided, filter by that rate
         if ($rate) {
             $query->where('rate_id', $rate->id);
         }
-        
+
         // Get the total booked quantity for this period
         $bookedQuantity = $query->sum('quantity');
-        
+
         // Check if our requested quantity plus already booked quantity exceeds capacity
         // If no capacity is defined on the model, default to 1 (single resource)
         $capacity = property_exists($bookable, 'capacity') ? $bookable->capacity : 1;
-        
+
         return ($bookedQuantity + $quantity) <= $capacity;
     }
-    
+
     /**
      * Find available time slots for a specific day
      *
