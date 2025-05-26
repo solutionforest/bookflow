@@ -49,19 +49,22 @@ class ThreeBookingCapacityTest extends TestCase
         $customer = new class extends \Illuminate\Database\Eloquent\Model
         {
             protected $table = 'customers';
+
             protected $guarded = [];
+
             public $id;
 
             public function save(array $options = [])
             {
                 $this->exists = true;
+
                 return true;
             }
         };
-        
+
         $customer->id = $id;
         $customer->save();
-        
+
         return $customer;
     }
 

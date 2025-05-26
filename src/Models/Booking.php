@@ -254,10 +254,10 @@ class Booking extends Model
                 });
 
             $bookedQuantity = $existingBookingsQuery->sum('quantity');
-            
+
             // Get capacity - use bookable relationship if available, otherwise default from config
             $capacity = config('bookflow.booking.default_capacity', 1); // Default capacity from config
-            
+
             // Try to get the actual bookable instance
             if ($booking->bookable_type && $booking->bookable_id) {
                 try {
@@ -276,7 +276,7 @@ class Booking extends Model
                             $bookableModel->id = $booking->bookable_id;
                         }
                     }
-                    
+
                     if ($bookableModel && property_exists($bookableModel, 'capacity')) {
                         $capacity = $bookableModel->capacity;
                     }
@@ -284,9 +284,9 @@ class Booking extends Model
                     // Keep default capacity if anything fails
                 }
             }
-            
+
             if (($bookedQuantity + $booking->quantity) > $capacity) {
-                throw new BookingException("Booking exceeds capacity. Available: " . ($capacity - $bookedQuantity) . ", Requested: " . $booking->quantity);
+                throw new BookingException('Booking exceeds capacity. Available: '.($capacity - $bookedQuantity).', Requested: '.$booking->quantity);
             }
 
             // Validate service type if specified

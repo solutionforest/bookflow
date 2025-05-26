@@ -51,21 +51,25 @@ class MultiUserSameTimeslotTest extends TestCase
         $user = new class extends \Illuminate\Database\Eloquent\Model
         {
             protected $table = 'users';
+
             protected $guarded = [];
+
             public $id;
+
             public $name;
 
             public function save(array $options = [])
             {
                 $this->exists = true;
+
                 return true;
             }
         };
-        
+
         $user->name = $name;
         $user->id = $id;
         $user->save();
-        
+
         return $user;
     }
 
