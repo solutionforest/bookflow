@@ -124,8 +124,8 @@ class BookingHelper
         $bookedQuantity = $query->sum('quantity');
 
         // Check if our requested quantity plus already booked quantity exceeds capacity
-        // If no capacity is defined on the model, default to 1 (single resource)
-        $capacity = property_exists($bookable, 'capacity') ? $bookable->capacity : 1;
+        // If no capacity is defined on the model, default to 3 (three bookings per timeslot)
+        $capacity = property_exists($bookable, 'capacity') ? $bookable->capacity : 3;
 
         return ($bookedQuantity + $quantity) <= $capacity;
     }

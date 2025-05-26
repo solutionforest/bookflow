@@ -120,7 +120,7 @@ class ComprehensiveBookingTest extends TestCase
             'ends_at' => '17:00',
             'days_of_week' => [1, 2, 3, 4, 5],
             'minimum_units' => 1,
-            'maximum_units' => 5,
+            'maximum_units' => 3, // Reduced to fit within capacity
         ]);
 
         $booking = Booking::create([
@@ -132,13 +132,13 @@ class ComprehensiveBookingTest extends TestCase
             'starts_at' => new DateTime('2024-01-01 09:00:00'),
             'ends_at' => new DateTime('2024-01-05 17:00:00'),
             'price' => 350.00,
-            'quantity' => 5,
-            'total' => 1750.00,
+            'quantity' => 3, // Reduced to fit within default capacity of 3
+            'total' => 1050.00, // Updated total
             'status' => 'confirmed',
         ]);
 
         expect($booking->exists)->toBeTrue()
-            ->and($booking->total)->toEqual(1750.00);
+            ->and($booking->total)->toEqual(1050.00);
     }
 
     /**

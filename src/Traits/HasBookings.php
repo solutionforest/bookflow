@@ -19,7 +19,7 @@ trait HasBookings
         return $this->morphMany(Rate::class, 'resource');
     }
 
-    public function isAvailable(\DateTime $start, \DateTime $end, ?string $serviceType = null): bool
+    public function isAvailable(\DateTime $start, \DateTime $end, ?string $serviceType = null, int $quantity = 1): bool
     {
         if ($start >= $end) {
             return false;
@@ -40,9 +40,14 @@ trait HasBookings
             });
         }
 
-        return ! $query->where('bookable_type', get_class($this))
+        $bookedQuantity = $query->where('bookable_type', get_class($this))
             ->where('bookable_id', $this->id)
-            ->exists();
+            ->sum('quantity');
+
+        // Get capacity from this model, default to 3
+        $capacity = property_exists($this, 'capacity') ? $this->capacity : 3;
+
+        return ($bookedQuantity + $quantity) <= $capacity;
     }
 
     public function getAvailableRates(\DateTime $dateTime, ?string $serviceType = null)

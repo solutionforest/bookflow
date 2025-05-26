@@ -17,13 +17,83 @@ BookFlow is a flexible Laravel package for managing bookings and pricing strateg
 ## Features
 
 - Easy booking management with support for one-time and recurring bookings
+- **Capacity Management** - Allow multiple bookings per timeslot (default: 3 bookings)
 - Flexible pricing strategies (Fixed, Hourly, Daily)
 - Customizable time-based pricing with configurable units and rounding
 - Extensible architecture for custom pricing strategies
-- Built-in conflict detection and availability checking
+- Built-in conflict detection and availability checking with capacity constraints
 - Support for multiple service types and rates
 - Comprehensive date and time validation
 - Laravel Eloquent integration
+
+## Capacity Management
+
+BookFlow supports booking capacity management, allowing multiple users to book the same timeslot when there's available capacity.
+
+### Setting Resource Capacity
+
+Add a `capacity` property to your bookable model:
+
+```php
+use SolutionForest\Bookflow\Traits\HasBookings;
+
+class ConferenceRoom extends Model
+{
+    use HasBookings;
+
+    protected $fillable = ['name', 'capacity'];
+
+    // This room can accommodate 3 simultaneous bookings
+    public $capacity = 3;
+}
+```
+
+### Default Behavior
+
+- **Default Capacity**: 3 bookings per timeslot (if no `capacity` property is defined)
+- **Capacity Validation**: Automatically prevents overbooking
+- **Flexible Quantities**: Support for variable booking quantities per reservation
+
+### Examples
+
+```php
+// Multiple users can book the same timeslot
+$room = ConferenceRoom::create(['name' => 'Meeting Room A']);
+
+// User A books 1 slot
+$bookingA = Booking::create([
+    'bookable_type' => ConferenceRoom::class,
+    'bookable_id' => $room->id,
+    'customer_type' => User::class,
+    'customer_id' => $userA->id,
+    'starts_at' => '2025-05-27 14:00:00',
+    'ends_at' => '2025-05-27 15:00:00',
+    'quantity' => 1, // Uses 1 out of 3 capacity
+    // other fields...
+]);
+
+// User B can book the same timeslot
+$bookingB = Booking::create([
+    'bookable_type' => ConferenceRoom::class,
+    'bookable_id' => $room->id,
+    'customer_type' => User::class,
+    'customer_id' => $userB->id,
+    'starts_at' => '2025-05-27 14:00:00', // Same time!
+    'ends_at' => '2025-05-27 15:00:00',
+    'quantity' => 1, // Uses 2 out of 3 capacity total
+    // other fields...
+]);
+
+// Check availability before booking
+$isAvailable = $room->isAvailable(
+    new DateTime('2025-05-27 14:00:00'),
+    new DateTime('2025-05-27 15:00:00'),
+    null, // service type
+    1     // quantity needed
+); // Returns true (1 slot still available)
+
+// Fourth booking would fail with BookingException
+```
 
 ## Installation
 

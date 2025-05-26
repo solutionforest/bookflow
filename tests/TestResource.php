@@ -7,6 +7,7 @@ use SolutionForest\Bookflow\Traits\HasBookings;
 
 /**
  * @property int $id
+ * @property int $capacity
  */
 class TestResource extends Model
 {
@@ -15,6 +16,8 @@ class TestResource extends Model
     protected $table = 'resources';
 
     protected $guarded = [];
+
+    public $capacity = 3; // Default capacity of 3 bookings per timeslot
 
     public function save(array $options = [])
     {

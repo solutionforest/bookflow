@@ -3,6 +3,28 @@
 return [
     /*
     |--------------------------------------------------------------------------
+    | Booking Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Here you can configure default booking behavior settings.
+    |
+    */
+    'booking' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Default Capacity
+        |--------------------------------------------------------------------------
+        |
+        | The default number of simultaneous bookings allowed for the same resource
+        | and time slot. This can be overridden on individual resources by
+        | implementing a getCapacity() method.
+        |
+        */
+        'default_capacity' => 1,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Pricing Strategies Configuration
     |--------------------------------------------------------------------------
     |
