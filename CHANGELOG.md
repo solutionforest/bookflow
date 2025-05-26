@@ -2,6 +2,10 @@
 
 All notable changes to `bookflow` will be documented in this file.
 
+## 0.0.2 - 2025-05-26
+
+**Full Changelog**: https://github.com/solutionforest/bookflow/compare/0.0.1...0.0.2
+
 ## 0.0.1 - 2025-05-13
 
 ### What's Changed
