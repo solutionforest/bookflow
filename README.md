@@ -1,9 +1,9 @@
 # BookFlow
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/solutionforest/bookflow.svg?style=flat-square)](https://packagist.org/packages/solutionforest/bookflow)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/solution-forest/bookflow.svg?style=flat-square)](https://packagist.org/packages/solution-forest/bookflow)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/solutionforest/bookflow/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/solutionforest/bookflow/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/solutionforest/bookflow/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/solutionforest/bookflow/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/solutionforest/bookflow.svg?style=flat-square)](https://packagist.org/packages/solutionforest/bookflow)
+[![Total Downloads](https://img.shields.io/packagist/dt/solution-forest/bookflow.svg?style=flat-square)](https://packagist.org/packages/solution-forest/bookflow)
 
 BookFlow is a flexible Laravel package for managing bookings and pricing strategies. It provides a robust foundation for implementing booking systems with customizable pricing calculations.
 

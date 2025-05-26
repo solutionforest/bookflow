@@ -261,22 +261,26 @@ class Booking extends Model
             // Try to get the actual bookable instance
             if ($booking->bookable_type && $booking->bookable_id) {
                 try {
+                    $bookableModel = null;
+                    
                     // First try using the relationship if it's loaded
                     if ($booking->relationLoaded('bookable') && $booking->bookable) {
                         $bookableModel = $booking->bookable;
                     } else {
-                        // For testing with anonymous classes, we need a different approach
-                        // Check if we can get an instance via reflection
+                        // Try to find the model in the database
                         $bookableClass = $booking->bookable_type;
                         if (class_exists($bookableClass)) {
                             $bookableModel = $bookableClass::find($booking->bookable_id);
-                        } else {
-                            // For anonymous classes in tests, create a dummy instance to check properties
-                            $bookableModel = new $bookableClass;
-                            $bookableModel->id = $booking->bookable_id;
+                            
+                            // If not found in database (like in tests), create a new instance
+                            if (!$bookableModel) {
+                                $bookableModel = new $bookableClass;
+                                $bookableModel->id = $booking->bookable_id;
+                            }
                         }
                     }
 
+                    // Use the simpler property_exists check like BookingHelper does
                     if ($bookableModel && property_exists($bookableModel, 'capacity')) {
                         $capacity = $bookableModel->capacity;
                     }
