@@ -262,7 +262,7 @@ class Booking extends Model
             if ($booking->bookable_type && $booking->bookable_id) {
                 try {
                     $bookableModel = null;
-                    
+
                     // First try using the relationship if it's loaded
                     if ($booking->relationLoaded('bookable') && $booking->bookable) {
                         $bookableModel = $booking->bookable;
@@ -271,9 +271,9 @@ class Booking extends Model
                         $bookableClass = $booking->bookable_type;
                         if (class_exists($bookableClass)) {
                             $bookableModel = $bookableClass::find($booking->bookable_id);
-                            
+
                             // If not found in database (like in tests), create a new instance
-                            if (!$bookableModel) {
+                            if (! $bookableModel) {
                                 $bookableModel = new $bookableClass;
                                 $bookableModel->id = $booking->bookable_id;
                             }
