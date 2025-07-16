@@ -5,6 +5,22 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/solutionforest/bookflow/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/solutionforest/bookflow/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/solution-forest/bookflow.svg?style=flat-square)](https://packagist.org/packages/solution-forest/bookflow)
 
+---
+
+## Deprecation Notice
+
+**⚠️ This project is now deprecated and will not receive further development.**
+
+We recommend users to migrate to [laravel-zap](https://github.com/ludoguenet/laravel-zap), which provides a more robust and actively maintained solution for booking and scheduling systems in Laravel.
+
+- [laravel-zap](https://github.com/ludoguenet/laravel-zap)
+
+BookFlow will remain available for reference but is no longer recommended for new projects. Please consider [laravel-zap](https://github.com/ludoguenet/laravel-zap) for your production needs.
+
+---
+
+## BookFlow
+
 BookFlow is a flexible Laravel package for managing bookings and pricing strategies. It provides a robust foundation for implementing booking systems with customizable pricing calculations.
 
 > ⚠️ **WARNING: DEVELOPMENT STATUS**⚠️ 
@@ -12,7 +28,6 @@ BookFlow is a flexible Laravel package for managing bookings and pricing strateg
 > This package is currently under active development and is **NOT READY FOR PRODUCTION USE**. 
 > 
 > Features may be incomplete, APIs might change, and there could be breaking changes. Use at your own risk in development environments only.
-
 
 ## Features
 
